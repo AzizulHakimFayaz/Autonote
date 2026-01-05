@@ -34,10 +34,7 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
         };
       }).toList();
 
-      final suggestion = await ApiService.organizeNote(
-        text,
-        existingNotesMaps,
-      );
+      final suggestion = await ApiService.organizeNote(text, existingNotesMaps);
 
       // SAFETY: force required fields
       aiSuggestion = {
@@ -45,18 +42,18 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
         "title": suggestion["title"] ?? "New Note",
         "merge_with": suggestion["merge_with"],
         "summary": suggestion["summary"] ?? text,
-        "tags": (suggestion["tags"] ?? [] as List).cast<String>(),
+        "tags": (suggestion["tags"] ?? []).cast<String>(),
         "reasoning":
-        suggestion["reasoning"] ?? "AI could not generate reasoning.",
+            suggestion["reasoning"] ?? "AI could not generate reasoning.",
       };
 
       setState(() => isAnalyzing = false);
     } catch (e) {
       setState(() => isAnalyzing = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("AI Error: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("AI Error: $e")));
       }
     }
   }
@@ -87,9 +84,9 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
     } catch (e) {
       setState(() => isCreating = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error saving note: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error saving note: $e")));
       }
     }
   }
@@ -131,7 +128,7 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                 maxLines: 8,
                 decoration: const InputDecoration(
                   hintText:
-                  'Type your note here...\n\nAI will automatically organize it for you.',
+                      'Type your note here...\n\nAI will automatically organize it for you.',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -140,10 +137,10 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                 onPressed: isAnalyzing ? null : _analyzeNote,
                 icon: isAnalyzing
                     ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Icon(Icons.auto_awesome),
                 label: Text(isAnalyzing ? 'Analyzing...' : 'Organize with AI'),
                 style: ElevatedButton.styleFrom(
@@ -171,8 +168,7 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                     /// TITLE
                     Row(
                       children: [
-                        Icon(Icons.auto_awesome,
-                            color: Colors.indigo.shade600),
+                        Icon(Icons.auto_awesome, color: Colors.indigo.shade600),
                         const SizedBox(width: 8),
                         Text(
                           'AI Suggestion',
@@ -195,24 +191,32 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                     _buildInfoRow('Title', aiSuggestion!['title']),
                     if (aiSuggestion!['merge_with'] != null)
                       _buildInfoRow(
-                          'Merge with', aiSuggestion!['merge_with'] ?? "Unknown"),
+                        'Merge with',
+                        aiSuggestion!['merge_with'] ?? "Unknown",
+                      ),
                     _buildInfoRow('Summary', aiSuggestion!['summary']),
 
                     const SizedBox(height: 8),
-                    const Text('Tags:',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Tags:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E1E64), // Dark Indigo
+                      ),
+                    ),
                     const SizedBox(height: 8),
 
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
-                      children:
-                      (aiSuggestion!['tags'] as List).map((tag) {
+                      children: (aiSuggestion!['tags'] as List).map((tag) {
                         return Chip(
-                          label: Text(tag.toString()),
+                          label: Text(
+                            tag.toString(),
+                            style: TextStyle(color: Colors.indigo.shade900),
+                          ),
                           backgroundColor: Colors.indigo.shade100,
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
                         );
                       }).toList(),
                     ),
@@ -227,8 +231,11 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.lightbulb_outline,
-                              size: 20, color: Colors.amber.shade700),
+                          Icon(
+                            Icons.lightbulb_outline,
+                            size: 20,
+                            color: Colors.amber.shade700,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -253,8 +260,9 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed:
-                      isCreating ? null : () => Navigator.pop(context, false),
+                      onPressed: isCreating
+                          ? null
+                          : () => Navigator.pop(context, false),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.all(16),
                       ),
@@ -264,8 +272,9 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed:
-                      isCreating ? null : () => _confirmSuggestion(true),
+                      onPressed: isCreating
+                          ? null
+                          : () => _confirmSuggestion(true),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.all(16),
                         backgroundColor: Colors.indigo.shade600,
@@ -273,13 +282,13 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
                       ),
                       child: isCreating
                           ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
                           : const Text('Confirm'),
                     ),
                   ),
@@ -302,10 +311,15 @@ class _AddNoteDialogState extends State<AddNoteDialog> {
             width: 100,
             child: Text(
               '$label:',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo.shade900,
+              ),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(value, style: TextStyle(color: Colors.indigo.shade900)),
+          ),
         ],
       ),
     );
